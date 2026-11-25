@@ -12,6 +12,9 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as CapabilitiesRouteImport } from './routes/capabilities'
 import { Route as ContactRouteImport } from './routes/contact'
+import { Route as StudioRouteImport } from './routes/studio'
+import { Route as ProposalsIndexRouteImport } from './routes/proposals/index'
+import { Route as ProposalsSectorIdRouteImport } from './routes/proposals/$sectorId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -28,35 +31,81 @@ const ContactRoute = ContactRouteImport.update({
   path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StudioRoute = StudioRouteImport.update({
+  id: '/studio',
+  path: '/studio',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProposalsIndexRoute = ProposalsIndexRouteImport.update({
+  id: '/proposals/',
+  path: '/proposals/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProposalsSectorIdRoute = ProposalsSectorIdRouteImport.update({
+  id: '/proposals/$sectorId',
+  path: '/proposals/$sectorId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/capabilities': typeof CapabilitiesRoute
   '/contact': typeof ContactRoute
+  '/studio': typeof StudioRoute
+  '/proposals/$sectorId': typeof ProposalsSectorIdRoute
+  '/proposals/': typeof ProposalsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/capabilities': typeof CapabilitiesRoute
   '/contact': typeof ContactRoute
+  '/studio': typeof StudioRoute
+  '/proposals/$sectorId': typeof ProposalsSectorIdRoute
+  '/proposals': typeof ProposalsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/capabilities': typeof CapabilitiesRoute
   '/contact': typeof ContactRoute
+  '/studio': typeof StudioRoute
+  '/proposals/$sectorId': typeof ProposalsSectorIdRoute
+  '/proposals/': typeof ProposalsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/capabilities' | '/contact'
+  fullPaths:
+    | '/'
+    | '/capabilities'
+    | '/contact'
+    | '/studio'
+    | '/proposals/$sectorId'
+    | '/proposals/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/capabilities' | '/contact'
-  id: '__root__' | '/' | '/capabilities' | '/contact'
+  to:
+    | '/'
+    | '/capabilities'
+    | '/contact'
+    | '/studio'
+    | '/proposals/$sectorId'
+    | '/proposals'
+  id:
+    | '__root__'
+    | '/'
+    | '/capabilities'
+    | '/contact'
+    | '/studio'
+    | '/proposals/$sectorId'
+    | '/proposals/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   CapabilitiesRoute: typeof CapabilitiesRoute
   ContactRoute: typeof ContactRoute
+  StudioRoute: typeof StudioRoute
+  ProposalsSectorIdRoute: typeof ProposalsSectorIdRoute
+  ProposalsIndexRoute: typeof ProposalsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +131,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/studio': {
+      id: '/studio'
+      path: '/studio'
+      fullPath: '/studio'
+      preLoaderRoute: typeof StudioRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/proposals/': {
+      id: '/proposals/'
+      path: '/proposals'
+      fullPath: '/proposals/'
+      preLoaderRoute: typeof ProposalsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/proposals/$sectorId': {
+      id: '/proposals/$sectorId'
+      path: '/proposals/$sectorId'
+      fullPath: '/proposals/$sectorId'
+      preLoaderRoute: typeof ProposalsSectorIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +159,9 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   CapabilitiesRoute: CapabilitiesRoute,
   ContactRoute: ContactRoute,
+  StudioRoute: StudioRoute,
+  ProposalsSectorIdRoute: ProposalsSectorIdRoute,
+  ProposalsIndexRoute: ProposalsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

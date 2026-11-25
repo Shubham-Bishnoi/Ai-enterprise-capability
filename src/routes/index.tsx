@@ -1,19 +1,30 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { ArrowRight, Mic, Plus, Sparkles, ShieldCheck } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  FileDown,
+  Layers,
+  MessageSquareText,
+  Sparkles,
+} from "lucide-react";
 import hero from "@/assets/hero.jpg";
 import neural from "@/assets/neural.jpg";
-import robot from "@/assets/robot.jpg";
-import { SiteNav, SiteFooter } from "@/components/SiteNav";
+import { SiteFooter, SiteNav } from "@/components/SiteNav";
 import { capabilities } from "@/lib/capabilities";
+import { categoryLabel, getProposal, proposals, type Proposal } from "@/lib/proposals";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Evolve AI — Every AI capability, in one place" },
-      { name: "description", content: "Evolve AI showcases what artificial intelligence can do today: language, vision, video, voice, code, agents and more." },
-      { property: "og:title", content: "Evolve AI — Every AI capability, in one place" },
-      { property: "og:description", content: "Explore what AI can do today, from reasoning to robotics." },
+      { title: "Evolve AI — AI for Bharat" },
+      {
+        name: "description",
+        content:
+          "Fifteen ready AI proposals for India's national priorities, with Bureaucrat and Minister editions — and an agent that writes the next one live.",
+      },
+      { property: "og:title", content: "Evolve AI — AI for Bharat" },
+      { property: "og:description", content: "AI proposals for government, ready for the room." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -21,159 +32,278 @@ export const Route = createFileRoute("/")({
   component: Index,
 });
 
-const prompts = ["write a launch plan for my startup", "turn this photo into a video", "summarize 200 pages in a minute", "build me a booking app"];
+const FEATURED = ["agriculture", "healthcare", "solar-energy", "justice-ecourts"];
 
-function useClock() {
-  const [now, setNow] = useState<Date | null>(null);
-  useEffect(() => {
-    setNow(new Date());
-    const t = setInterval(() => setNow(new Date()), 1000);
-    return () => clearInterval(t);
-  }, []);
-  return now;
-}
+const prompts = [
+  "Tourism & Heritage — for the State Tourism Minister",
+  "Fisheries — for the District Collector, Ratnagiri",
+  "Cybersecurity — for the Principal Secretary, IT",
+  "Mining safety — for the PSU Board of Directors",
+];
 
 function useTyped() {
   const [i, setI] = useState(0);
   const [n, setN] = useState(0);
   useEffect(() => {
     const full = prompts[i] ?? "";
-    const t = setTimeout(() => {
-      if (n < full.length) setN(n + 1);
-      else { setN(0); setI((i + 1) % prompts.length); }
-    }, n < full.length ? 70 : 1800);
+    const t = setTimeout(
+      () => {
+        if (n < full.length) setN(n + 1);
+        else {
+          setN(0);
+          setI((i + 1) % prompts.length);
+        }
+      },
+      n < full.length ? 45 : 2200,
+    );
     return () => clearTimeout(t);
   }, [i, n]);
   return (prompts[i] ?? "").slice(0, n);
 }
 
 function Index() {
-  const now = useClock();
   const typed = useTyped();
-  const time = now ? now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: false }) : "00:00";
-  const date = now ? now.toLocaleDateString([], { weekday: "short", day: "numeric", month: "short" }) : "";
+  const featured = FEATURED.map(getProposal).filter((p): p is Proposal => !!p);
 
   return (
     <div>
-      <section className="relative min-h-screen overflow-hidden text-on-image">
-        <img src={hero} alt="Person wearing AI glasses looking at the sky" width={1920} height={1088} className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-b from-foreground/10 via-transparent to-foreground/50" />
-        <SiteNav onImage />
+      <SiteNav />
 
-        <div className="relative z-10 flex flex-col items-center pt-24">
-          <div className="glass fade-up rounded-full px-6 py-1.5 text-lg">{date}</div>
-          <div className="glass fade-up mt-3 rounded-3xl px-10 font-display text-[22vw] font-extralight leading-none tracking-tighter text-on-image/70 md:text-[12rem]">
-            {time}
-          </div>
-        </div>
-
-        <div className="relative z-10 mx-auto mt-10 grid max-w-7xl gap-10 px-6 pb-40 md:grid-cols-2 md:px-10">
-          <div className="fade-up">
-            <h1 className="text-5xl font-medium leading-[1.05] md:text-7xl">Ask once.<br />AI does the rest.</h1>
-            <p className="mt-5 max-w-md text-lg text-on-image-muted">
-              Evolve AI maps every capability of modern artificial intelligence — and shows you how to put it to work.
-            </p>
-          </div>
-          <div className="glass fade-up hidden self-end justify-self-end rounded-2xl p-5 text-sm md:block md:w-80">
-            <div className="flex justify-between text-xs uppercase tracking-wider"><span>Evolve agent</span><span>live</span></div>
-            <p className="mt-4 line-through opacity-70">Draft quarterly report</p>
-            <p className="text-on-image-muted">done · 14 sources cited</p>
-            <div className="my-4 h-px bg-glass-border" />
-            <p className="text-on-image-muted">next: design the slides</p>
-          </div>
-        </div>
-
-        <div className="absolute inset-x-0 bottom-8 z-10 flex flex-col items-center gap-3 px-4">
-          <div className="hidden flex-wrap justify-center gap-2 md:flex">
-            {["Text", "Image", "Video", "Voice", "Code"].map((c) => (
-              <span key={c} className="glass rounded-full px-4 py-1.5 text-sm">{c}</span>
-            ))}
-          </div>
-          <div className="glass flex w-full max-w-xl items-center gap-3 rounded-2xl p-2 pl-4">
-            <Plus className="h-4 w-4 opacity-70" />
-            <span className="flex-1 truncate">{typed}<span className="animate-pulse">|</span></span>
-            <span className="glass rounded-lg p-2"><Mic className="h-4 w-4" /></span>
-            <Link to="/capabilities" className="flex items-center gap-1 rounded-xl bg-card px-4 py-2 text-sm font-semibold text-card-foreground">
-              Explore <ArrowRight className="h-4 w-4" />
+      {/* Hero */}
+      <section className="pt-14 text-center md:pt-20">
+        <div className="section-x reveal">
+          <p className="type-eyebrow text-ink-2">Evolve AI for Government</p>
+          <h1 className="type-hero mt-2">AI for Bharat.</h1>
+          <p className="type-subhead mx-auto mt-4 max-w-[720px] text-ink-2">
+            Fifteen proposals for India's national priorities. One agent that writes the next.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
+            <Link to="/proposals" className="btn-primary">
+              Explore proposals
+            </Link>
+            <Link to="/studio" className="btn-secondary">
+              Open Studio
             </Link>
           </div>
-          <p className="flex items-center gap-2 text-sm text-on-image-muted">
-            <span className="h-2 w-2 animate-pulse rounded-full bg-accent" /> Evolve right now: tracking 12 frontier capabilities
+        </div>
+        <div className="section-wide reveal mt-14" style={{ animationDelay: "120ms" }}>
+          <div className="relative overflow-hidden rounded-[28px]">
+            <img
+              src={hero}
+              alt="A person looking up at the sky, wearing smart glasses"
+              width={1920}
+              height={1088}
+              className="h-[420px] w-full object-cover md:h-[560px]"
+            />
+            <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/60 to-transparent p-8 text-left text-white md:p-12">
+              <p className="type-intro max-w-[520px]">
+                Every proposal comes in two editions — one for the Secretary who implements it, one
+                for the Minister who announces it.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Promo tiles, apple.com home-page grid */}
+      <section className="section-wide mt-3 grid gap-3 pt-3 md:grid-cols-2">
+        {featured.map((p, i) => (
+          <PromoTile key={p.id} p={p} dark={i === 1 || i === 2} />
+        ))}
+      </section>
+
+      <Lineup />
+
+      {/* How it works */}
+      <section className="bg-paper-2 py-24">
+        <div className="section-x text-center">
+          <h2 className="type-section">From idea to the minister's desk.</h2>
+          <p className="type-intro mx-auto mt-4 max-w-[620px] text-ink-2">
+            Three steps. No templates to fill.
           </p>
         </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-6 py-28 md:px-10">
-        <h2 className="max-w-3xl text-3xl font-medium md:text-5xl">
-          Words, images, video, voice and code — <span className="text-muted-foreground">everything AI can create, live and ready to use.</span>
-        </h2>
-
-        <div className="mt-16 grid gap-5 md:grid-cols-3">
-          <div className="relative overflow-hidden rounded-3xl md:row-span-2">
-            <img src={neural} alt="Glowing neural network over the ocean" loading="lazy" width={1024} height={1280} className="h-full w-full object-cover" />
-            <div className="absolute inset-x-0 top-0 p-6 text-on-image">
-              <p className="text-sm opacity-80">Every modality</p>
-              <h3 className="mt-1 text-2xl font-medium">One model, many senses.</h3>
-            </div>
-          </div>
-
-          <div className="rounded-3xl bg-card p-6 shadow-soft md:col-span-2">
-            <p className="text-sm text-muted-foreground">One line in</p>
-            <h3 className="mt-1 text-2xl font-medium">Describe it once, get finished work back.</h3>
-            <div className="mt-6 flex items-center gap-3 rounded-2xl bg-secondary p-4">
-              <Sparkles className="h-5 w-5 text-accent" />
-              <span>a 60-second product video with voiceover and captions</span>
-            </div>
-            <div className="mt-3 grid grid-cols-3 gap-3 text-center text-sm">
-              {[["Script", "12s"], ["Voice", "4s"], ["Video", "48s"]].map(([k, v]) => (
-                <div key={k} className="rounded-xl border p-3"><div className="font-display text-xl">{v}</div><div className="text-muted-foreground">{k}</div></div>
-              ))}
-            </div>
-          </div>
-
-          <div className="relative overflow-hidden rounded-3xl">
-            <img src={robot} alt="Robot hand touching a human hand" loading="lazy" width={1024} height={1024} className="h-full w-full object-cover" />
-            <div className="absolute inset-x-0 bottom-0 p-6 text-on-image">
-              <h3 className="text-xl font-medium">Robots that learn by watching.</h3>
-            </div>
-          </div>
-
-          <div className="flex flex-col justify-between rounded-3xl bg-primary p-6 text-primary-foreground">
-            <ShieldCheck className="h-8 w-8 text-accent" />
-            <div>
-              <p className="text-sm opacity-70">Responsible by design</p>
-              <h3 className="mt-1 text-xl font-medium">Safe, private and transparent AI.</h3>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section className="mx-auto max-w-6xl px-6 pb-28 md:px-10">
-        <div className="flex items-end justify-between">
-          <h2 className="text-3xl font-medium md:text-4xl">What AI can do today</h2>
-          <Link to="/capabilities" className="text-sm font-semibold">See all →</Link>
-        </div>
-        <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {capabilities.slice(0, 8).map((c, i) => (
-            <div key={c.title} className="rounded-2xl border bg-card p-5 transition hover:-translate-y-1 hover:shadow-soft">
-              <span className="font-display text-sm text-accent">{String(i + 1).padStart(2, "0")}</span>
-              <h3 className="mt-3 text-lg font-medium">{c.title}</h3>
-              <p className="mt-2 text-sm text-muted-foreground">{c.desc}</p>
+        <div className="section-x mt-14 grid gap-4 md:grid-cols-3">
+          {[
+            {
+              Icon: Layers,
+              title: "Pick a sector.",
+              text: "Start from fifteen researched proposals — or name any domain in Studio.",
+            },
+            {
+              Icon: MessageSquareText,
+              title: "Name your audience.",
+              text: "Bureaucrat, Minister, Collector, PSU board or CSR partner. The agent asks what it needs.",
+            },
+            {
+              Icon: FileDown,
+              title: "Download the edition.",
+              text: "A designed PDF with the ask, the centralized system, roadmap, budget and KPIs.",
+            },
+          ].map(({ Icon, title, text }) => (
+            <div key={title} className="rounded-[18px] bg-white p-8">
+              <Icon className="h-8 w-8 text-blue" />
+              <h3 className="type-card-title mt-6">{title}</h3>
+              <p className="mt-2 text-ink-2">{text}</p>
             </div>
           ))}
         </div>
       </section>
 
-      <section className="mx-auto mb-28 max-w-6xl px-6 md:px-10">
-        <div className="rounded-3xl bg-primary px-8 py-16 text-center text-primary-foreground">
-          <h2 className="text-4xl font-medium md:text-6xl">Evolve with AI.</h2>
-          <p className="mx-auto mt-4 max-w-md opacity-70">Tell us what you want to build — we'll show you the AI that does it.</p>
-          <Link to="/contact" className="mt-8 inline-flex items-center gap-2 rounded-xl bg-card px-6 py-3 font-semibold text-card-foreground">
-            Start a conversation <ArrowRight className="h-4 w-4" />
-          </Link>
+      {/* Studio */}
+      <section className="bg-night py-24 text-white">
+        <div className="section-x text-center">
+          <p className="type-eyebrow text-[#a1a1a6]">Studio</p>
+          <h2 className="type-headline mt-2">Any domain. Written live.</h2>
+          <p className="type-intro mx-auto mt-4 max-w-[640px] text-[#a1a1a6]">
+            Type a domain. The agent researches current schemes, asks who you're presenting to, and
+            writes a complete proposal in minutes.
+          </p>
+          <div className="mx-auto mt-12 flex max-w-[620px] items-center gap-3 rounded-full border border-white/15 bg-night-2 py-2 pl-6 pr-2 text-left">
+            <Sparkles className="h-5 w-5 shrink-0 text-link-dark" />
+            <span className="min-w-0 flex-1 truncate text-[17px] text-[#f5f5f7]">
+              {typed}
+              <span className="animate-pulse text-link-dark">|</span>
+            </span>
+            <Link to="/studio" className="btn-primary shrink-0 !py-2">
+              Try it
+            </Link>
+          </div>
+        </div>
+        <div className="section-wide mt-16">
+          <img
+            src={neural}
+            alt="A glowing neural network above the ocean"
+            loading="lazy"
+            width={1024}
+            height={1280}
+            className="h-[320px] w-full rounded-[28px] object-cover opacity-90 md:h-[440px]"
+          />
         </div>
       </section>
+
+      {/* Capabilities */}
+      <section className="py-24">
+        <div className="section-wide">
+          <div className="flex items-end justify-between gap-6">
+            <h2 className="type-section max-w-[640px]">What AI can do today.</h2>
+            <Link
+              to="/capabilities"
+              className="link-apple hidden shrink-0 items-center md:inline-flex"
+            >
+              All capabilities <ChevronRight className="h-4 w-4" />
+            </Link>
+          </div>
+          <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            {capabilities.slice(0, 8).map((c) => (
+              <div key={c.title} className="rounded-[18px] bg-paper-2 p-7">
+                <h3 className="text-[19px] font-semibold tracking-tight">{c.title}</h3>
+                <p className="type-caption mt-2 text-ink-2">{c.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       <SiteFooter />
     </div>
+  );
+}
+
+function PromoTile({ p, dark }: { p: Proposal; dark: boolean }) {
+  return (
+    <div
+      className={`flex min-h-[520px] flex-col items-center px-6 pt-12 pb-10 text-center md:min-h-[580px] ${dark ? "bg-night text-white" : "bg-paper-2"}`}
+    >
+      <p className={`type-caption font-semibold ${dark ? "text-[#a1a1a6]" : "text-ink-2"}`}>
+        {p.sector}
+      </p>
+      <h3 className="type-tile mt-1 max-w-[480px] text-balance">{p.title}</h3>
+      <p className={`type-intro mt-2 max-w-[440px] ${dark ? "text-[#a1a1a6]" : "text-ink-2"}`}>
+        {p.tagline}
+      </p>
+      <div className="mt-4 flex flex-wrap justify-center gap-4">
+        <Link
+          to="/proposals/$sectorId"
+          params={{ sectorId: p.id }}
+          className="btn-primary !px-4 !py-2 !text-[14px]"
+        >
+          View proposal
+        </Link>
+        <Link
+          to="/proposals/$sectorId"
+          params={{ sectorId: p.id }}
+          search={{ view: "minister" }}
+          className={`inline-flex items-center text-[14px] ${dark ? "text-link-dark" : "text-link"} hover:underline`}
+        >
+          Minister edition <ChevronRight className="h-4 w-4" />
+        </Link>
+      </div>
+      <div className="mt-auto pt-10">
+        <p className="bg-gradient-to-r from-[#2997ff] via-[#a78bfa] to-[#f472b6] bg-clip-text text-[64px] font-semibold leading-none tracking-tight text-transparent md:text-[80px]">
+          {p.heroStat.value}
+        </p>
+        <p
+          className={`type-caption mx-auto mt-3 max-w-[360px] ${dark ? "text-[#86868b]" : "text-ink-3"}`}
+        >
+          {p.heroStat.label}
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function Lineup() {
+  const scroller = useRef<HTMLDivElement>(null);
+  const scroll = (dir: 1 | -1) =>
+    scroller.current?.scrollBy({ left: dir * 360, behavior: "smooth" });
+  return (
+    <section className="py-24">
+      <div className="section-wide flex items-end justify-between gap-6">
+        <h2 className="type-section">Explore all fifteen.</h2>
+        <Link to="/proposals" className="link-apple hidden shrink-0 items-center md:inline-flex">
+          View all proposals <ChevronRight className="h-4 w-4" />
+        </Link>
+      </div>
+      <div
+        ref={scroller}
+        className="no-scrollbar mt-10 flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-px-[6.25vw] px-[6.25vw] pb-6 xl:scroll-px-[calc((100vw-1260px)/2)] xl:px-[calc((100vw-1260px)/2)]"
+      >
+        {proposals.map((p) => (
+          <Link
+            key={p.id}
+            to="/proposals/$sectorId"
+            params={{ sectorId: p.id }}
+            className="card-shadow flex h-[400px] w-[300px] shrink-0 snap-start flex-col rounded-[18px] bg-white p-7 md:w-[340px]"
+          >
+            <p className="type-micro font-semibold text-ink-3">{categoryLabel(p.category)}</p>
+            <p className="mt-1 text-[14px] font-semibold text-blue">{p.sector}</p>
+            <h3 className="type-card-title mt-3 text-balance">{p.title}</h3>
+            <p className="type-caption mt-3 text-ink-2 line-clamp-3">{p.tagline}</p>
+            <div className="mt-auto">
+              <p className="text-[36px] font-semibold leading-none tracking-tight">
+                {p.heroStat.value}
+              </p>
+              <p className="type-micro mt-2 text-ink-2 line-clamp-2">{p.heroStat.label}</p>
+            </div>
+          </Link>
+        ))}
+      </div>
+      <div className="section-wide flex justify-end gap-3">
+        <button
+          aria-label="Scroll left"
+          onClick={() => scroll(-1)}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e8e8ed] text-ink/70 transition-colors hover:bg-[#dcdce1]"
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        <button
+          aria-label="Scroll right"
+          onClick={() => scroll(1)}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-[#e8e8ed] text-ink/70 transition-colors hover:bg-[#dcdce1]"
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
+      </div>
+    </section>
   );
 }

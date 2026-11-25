@@ -14,4 +14,25 @@ describe("App routing", () => {
 
     expect(matches.at(-1)?.routeId).not.toBe(rootRouteId);
   });
+
+  it.each([
+    ["/proposals", "/proposals/"],
+    ["/proposals/agriculture", "/proposals/$sectorId"],
+    ["/studio", "/studio"],
+  ])("matches %s to %s", (path, routeId) => {
+    const router = createRouter({ routeTree, context: { queryClient: new QueryClient() } });
+
+    expect(router.matchRoutes(path).at(-1)?.routeId).toBe(routeId);
+  });
+});
+
+describe("Proposals", () => {
+  it("ships fifteen sectors, each with a Bureaucrat and a Minister brief", async () => {
+    const { proposals } = await import("@/lib/proposals");
+
+    expect(proposals).toHaveLength(15);
+    for (const p of proposals) {
+      expect(p.briefs.map((b) => b.audience)).toEqual(["bureaucrat", "minister"]);
+    }
+  });
 });

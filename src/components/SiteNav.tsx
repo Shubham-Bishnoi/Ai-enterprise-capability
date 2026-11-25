@@ -1,37 +1,156 @@
 import { Link } from "@tanstack/react-router";
+import { useEffect, useState, type ReactNode } from "react";
+import { Menu, X } from "lucide-react";
+import { categories, proposals } from "@/lib/proposals";
 
-export function SiteNav({ onImage = false }: { onImage?: boolean }) {
-  const text = onImage ? "text-on-image" : "text-foreground";
+const links = [
+  { to: "/proposals", label: "Proposals" },
+  { to: "/studio", label: "Studio" },
+  { to: "/capabilities", label: "Capabilities" },
+  { to: "/contact", label: "Contact" },
+] as const;
+
+function Mark() {
   return (
-    <header className={`absolute inset-x-0 top-0 z-30 flex items-center justify-between px-6 py-5 md:px-10 ${text}`}>
-      <div className="flex items-center gap-8">
-        <Link to="/" className="flex items-center gap-2 font-display text-xl font-semibold tracking-tight">
-          <span className="inline-block h-4 w-4 rounded-full border-2 border-current border-r-transparent" />
-          evolve<span className="text-accent">.</span>ai
+    <Link
+      to="/"
+      aria-label="Evolve AI home"
+      className="flex items-center gap-1.5 text-[15px] font-semibold tracking-tight"
+    >
+      <span className="inline-block h-3 w-3 rounded-full border-[1.5px] border-current border-r-transparent" />
+      <span>
+        evolve<span className="text-blue">.</span>ai
+      </span>
+    </Link>
+  );
+}
+
+/** apple.com-style global navigation: 44px, frosted, centred links. */
+export function SiteNav({ sticky = true, dark = false }: { sticky?: boolean; dark?: boolean }) {
+  const [open, setOpen] = useState(false);
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  const tone = dark ? "frosted-dark text-white/80" : "frosted text-ink/80";
+  return (
+    <header className={`${sticky ? "sticky" : "relative"} top-0 z-50 ${tone}`}>
+      <nav className="mx-auto flex h-11 max-w-[1024px] items-center justify-between px-4 md:px-[22px]">
+        <Mark />
+        <ul className="hidden items-center gap-10 md:flex">
+          {links.map((l) => (
+            <li key={l.to}>
+              <Link
+                to={l.to}
+                className="type-micro transition-colors hover:opacity-100"
+                activeProps={{ className: dark ? "text-white" : "text-ink" }}
+              >
+                {l.label}
+              </Link>
+            </li>
+          ))}
+        </ul>
+        <Link to="/studio" className="btn-small hidden md:inline-flex">
+          New proposal
         </Link>
-        <nav className="hidden gap-6 text-sm font-medium md:flex">
-          <Link to="/capabilities" className="opacity-90 hover:opacity-100">Capabilities</Link>
-          <Link to="/contact" className="opacity-90 hover:opacity-100">Contact</Link>
-        </nav>
-      </div>
-      <Link to="/contact" className="rounded-xl bg-card px-5 py-2.5 text-sm font-semibold text-card-foreground shadow-soft transition hover:-translate-y-0.5">
-        Talk to Evolve
-      </Link>
+        <button
+          className="md:hidden"
+          aria-label={open ? "Close menu" : "Open menu"}
+          onClick={() => setOpen(!open)}
+        >
+          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        </button>
+      </nav>
+      {open && (
+        <div
+          className={`fixed inset-x-0 top-11 bottom-0 z-50 px-10 pt-6 md:hidden ${dark ? "bg-night-2 text-white" : "bg-paper text-ink"}`}
+        >
+          <ul className="space-y-3">
+            {links.map((l, i) => (
+              <li key={l.to} className="reveal" style={{ animationDelay: `${i * 40}ms` }}>
+                <Link
+                  to={l.to}
+                  onClick={() => setOpen(false)}
+                  className="text-[28px] font-semibold tracking-tight"
+                >
+                  {l.label}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
     </header>
   );
 }
 
-export function SiteFooter() {
+/** Sticky product-style sub navigation (title left, actions right). */
+export function LocalNav({ title, children }: { title: ReactNode; children?: ReactNode }) {
   return (
-    <footer className="border-t px-6 py-10 text-sm text-muted-foreground md:px-10">
-      <div className="mx-auto flex max-w-6xl flex-col justify-between gap-4 md:flex-row">
-        <span className="font-display font-semibold text-foreground">evolve.ai</span>
-        <div className="flex gap-6">
-          <Link to="/">Home</Link>
-          <Link to="/capabilities">Capabilities</Link>
-          <Link to="/contact">Contact</Link>
+    <div className="frosted sticky top-0 z-40 border-b border-black/10">
+      <div className="mx-auto flex h-[52px] max-w-[1024px] items-center justify-between gap-4 px-4 md:px-[22px]">
+        <div className="truncate text-[19px] font-semibold tracking-tight md:text-[21px]">
+          {title}
         </div>
-        <span>© {new Date().getFullYear()} Evolve AI</span>
+        <div className="flex shrink-0 items-center gap-5">{children}</div>
+      </div>
+    </div>
+  );
+}
+
+export function SiteFooter() {
+  const year = new Date().getFullYear();
+  const columns = categories.map((c) => ({
+    heading: c.label,
+    items: proposals.filter((p) => p.category === c.id).map((p) => ({ id: p.id, label: p.sector })),
+  }));
+  return (
+    <footer className="bg-paper-2 text-ink-2">
+      <div className="mx-auto max-w-[1024px] px-4 pb-5 pt-8 type-micro md:px-[22px]">
+        <p className="border-b border-hairline pb-4">
+          Budgets in every proposal are indicative estimates by Evolve AI and are refined with the
+          department after a pilot. Statistics are cited to their public sources. Proposals written
+          live in Studio are generated by AI and should be reviewed before submission.
+        </p>
+        <div className="grid grid-cols-2 gap-6 py-6 md:grid-cols-5">
+          {columns.map((col) => (
+            <div key={col.heading}>
+              <h3 className="mb-2 text-[12px] font-semibold text-ink">{col.heading}</h3>
+              <ul className="space-y-1.5">
+                {col.items.map((it) => (
+                  <li key={it.id}>
+                    <Link
+                      to="/proposals/$sectorId"
+                      params={{ sectorId: it.id }}
+                      className="hover:underline"
+                    >
+                      {it.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          ))}
+          <div>
+            <h3 className="mb-2 text-[12px] font-semibold text-ink">Evolve AI</h3>
+            <ul className="space-y-1.5">
+              {links.map((l) => (
+                <li key={l.to}>
+                  <Link to={l.to} className="hover:underline">
+                    {l.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+        <div className="flex flex-col justify-between gap-2 border-t border-hairline pt-4 md:flex-row">
+          <span>Copyright © {year} Evolve AI. All rights reserved.</span>
+          <span>India</span>
+        </div>
       </div>
     </footer>
   );
